@@ -1,5 +1,5 @@
 <li<%= ' class="active"' if current == "Parts" %>>
-  <%= link_to t("parts"), admin_product_parts_url(@product) %>
+  <%= link_to_with_icon 'icon-briefcase', t("parts"), admin_product_parts_url(@product) %>
 </li>
 
 <% if @product.assembly? %>
