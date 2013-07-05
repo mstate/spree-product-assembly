@@ -9,9 +9,9 @@ Spree::LineItem.class_eval do
       errors.add(:quantity, I18n.t("validation.must_be_non_negative"))
     end
     # avoid reload of order.inventory_units by using direct lookup
-    unless !Spree::Config[:track_inventory_levels]                        ||
-           Spree::Config[:allow_backorders]                               ||
-           order   && Spree::InventoryUnit.order_id_equals(order).first.present? ||
+    unless !Spree::Config[:track_inventory_levels]   ||
+           Spree::Config[:allow_backorders]          ||
+           order   && order.inventory_units.present? ||
            variant && quantity <= variant.on_hand
       errors.add(:quantity, I18n.t("validation.is_too_large") + " (#{self.variant.name})")
     end
