@@ -17,29 +17,6 @@ Spree::Product.class_eval do
 
   attr_accessible :can_be_part, :individual_sale
 
-  # returns the number of inventory units "on_hand" for this product
-  def on_hand_with_assembly(reload = false)
-    if self.assembly? && Spree::Config[:track_inventory_levels]
-      parts(reload).map{|v| v.on_hand / self.count_of(v) }.min
-    else
-      on_hand_without_assembly
-    end
-  end
-  alias_method_chain :on_hand, :assembly
-
-  alias_method :orig_on_hand=, :on_hand=
-  def on_hand=(new_level)
-    self.orig_on_hand=(new_level) unless self.assembly?
-  end
-
-  alias_method :orig_has_stock?, :has_stock?
-  def has_stock?
-    if self.assembly? && Spree::Config[:track_inventory_levels]
-      !parts.detect{|v| self.count_of(v) > v.on_hand}
-    else
-      self.orig_has_stock?
-    end
-  end
 
   def add_part(variant, count = 1)
     ap = Spree::AssembliesPart.get(self.id, variant.id)
