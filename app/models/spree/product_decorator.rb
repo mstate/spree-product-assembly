@@ -19,7 +19,7 @@ Spree::Product.class_eval do
 
   # returns the number of inventory units "on_hand" for this product
   def on_hand_with_assembly(reload = false)
-    if self.assembly? && Spree::Config[:track_inventory_levels]
+    if self.assembly? && Spree::Config[:track_inventory_levels] && !self.decouple_inventory_from_parts?
       parts(reload).map{|v| v.on_hand / self.count_of(v) }.min
     else
       on_hand_without_assembly
@@ -29,12 +29,12 @@ Spree::Product.class_eval do
 
   alias_method :orig_on_hand=, :on_hand=
   def on_hand=(new_level)
-    self.orig_on_hand=(new_level) unless self.assembly?
+    self.orig_on_hand=(new_level) if !self.assembly? || self.decouple_inventory_from_parts?
   end
 
   alias_method :orig_has_stock?, :has_stock?
   def has_stock?
-    if self.assembly? && Spree::Config[:track_inventory_levels]
+    if self.assembly? && Spree::Config[:track_inventory_levels] && !self.decouple_inventory_from_parts?
       !parts.detect{|v| self.count_of(v) > v.on_hand}
     else
       self.orig_has_stock?

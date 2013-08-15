@@ -32,6 +32,10 @@ describe Spree::Product do
     it "has a specified on_hand" do
       @product.on_hand.should == 5
     end
+
+    it "should default coupling its inventory with parts" do
+      @product.decouple_inventory_from_parts.should be_false
+    end
   end
   
   describe "w/ variants" do
@@ -128,6 +132,14 @@ describe Spree::Product do
     it "is an assembly" do
       @product.should be_assembly
       @product.on_hand.should == 4 # min_of(5/1, 16/4)
+    end
+
+    it 'is a de-coupled assembly' do
+      @product.decouple_inventory_from_parts = true
+      @product.save
+      @product.on_hand = 100
+      @product.save
+      @product.on_hand.should == 100
     end
     
     describe "setting on_hand" do
