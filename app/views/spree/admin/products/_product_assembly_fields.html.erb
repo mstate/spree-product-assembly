@@ -6,8 +6,13 @@
   <%= f.label :individual_sale, t("individual_sale")%><br />
   <%= f.check_box(:individual_sale) %>
 </p>
+<p>
+  <%= f.label :decouple_inventory_from_parts, t("decouple_inventory_from_parts")%><br />
+  <%= f.check_box(:decouple_inventory_from_parts) %>
+</p>
 
-<% if @product.assembly? %>
+
+<% if @product.assembly? && !@product.decouple_inventory_from_parts? %>
   <% content_for :head do %>
     <script type="text/javascript">
       jQuery(document).ready(function(){
