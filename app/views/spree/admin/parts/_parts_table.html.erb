@@ -5,6 +5,7 @@
   		<th><%= Spree.t(:name) %></th>
   		<th><%= Spree.t(:options) %></th>
   		<th><%= Spree.t(:qty) %></th>
+      <th><%= Spree.t(:in_stock) %></th>      
   		<th></th>
   	</tr>
   </thead>
@@ -15,6 +16,7 @@
         <td><%= part.product.name %></td>
         <td><%= variant_options part %></td>
         <td><%= text_field_tag :count, @product.count_of(part) %></td>
+        <td><%= part.product.total_on_hand %></p>        
   	    <td class="actions">
           <%= image_tag "spinner.gif", :style => "display:none", :class => "spinner" %>
           <%= link_to(icon('edit') + ' ' + Spree.t(:update),
