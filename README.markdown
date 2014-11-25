@@ -41,7 +41,6 @@ That means you essentially have a product composed of other products. From a
 customer perspective it's like they are paying a single amount for a collection
 of products.
 
-
 ## Using with spree_wombat
 
 If you use this with spree_wombat make sure that you add this extension after
@@ -55,6 +54,7 @@ config.payload_builder = {
   "Spree::Shipment" => {:serializer => "Spree::Wombat::AssemblyShipmentSerializer", :root => "shipments"}
 }
 
+```
 
 Contributing
 ------------

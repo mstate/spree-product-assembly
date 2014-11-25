@@ -1,6 +1,6 @@
 module Spree
   module Admin
-    LineItemsController.class_eval do
+    class LineItemsController
       def update
         @line_item.update_attributes(line_item_params)
         render nothing: true

@@ -1,10 +1,9 @@
 source "https://rubygems.org"
 
-gem 'spree', github: 'spree/spree', branch: '2-3-stable'
+branch = 'master'
+gem 'spree', github: 'spree/spree', branch: branch
+gem 'spree_wombat', github: 'spree/spree_wombat', branch: branch
 
-group :test, :development do
-  gem 'pry-rails'
-  gem 'spree_wombat', github: 'spree/spree_wombat', branch: "2-3-stable"
-end
+gem 'pry-rails'
 
 gemspec
