@@ -21,32 +21,65 @@ module Spree
       # doesn't actually should have stock items, it's not a real product.
       # We track its parts stock items instead.
       def product_assembly_package
-        package = Package.new(stock_location, order)
-        order.line_items.each do |line_item|
-          product = line_item.product
+        package = Package.new(stock_location)
+        inventory_units.group_by(&:variant).each do |variant, variant_inventory_units|
+          product = variant.product
           if product.assembly?
-            line_item.parts.each do |part|
+            product.parts.each do |part|
               if part.should_track_inventory?
-                next unless stock_location.stock_item(part)
+                next unless stock_location.stock_item(part)                
+                units = variant_inventory_units.clone # this could be wrong to count the quantity of assembled product in order    
 
-                on_hand, backordered = stock_location.fill_status(part, line_item.quantity * product.count_of(part))
-                package.add line_item, on_hand, :on_hand, part if on_hand > 0
-                package.add line_item, backordered, :backordered, part if backordered > 0
+                on_hand, backordered = stock_location.fill_status(part, units.count * product.count_of(part))
+                package.add units.slice!(0, on_hand), :on_hand if on_hand > 0
+                package.add units.slice!(0, backordered), :backordered if backordered > 0
+
+                #package.add line_item, on_hand, :on_hand, part if on_hand > 0
+                #package.add line_item, backordered, :backordered, part if backordered > 0
               else
-                package.add line_item, line_item.quantity * product.count_of(part), :on_hand, part
+                package.add units.slice!(0, on_hand), :on_hand
               end
-            end
-          elsif line_item.should_track_inventory?
-            next unless stock_location.stock_item(line_item.variant)
+            end          
+          elsif variant.should_track_inventory?
+            next unless stock_location.stock_item(variant)
+            units = variant_inventory_units.clone          
 
-            on_hand, backordered = stock_location.fill_status(line_item.variant, line_item.quantity)
-            package.add line_item, on_hand, :on_hand, line_item.variant if on_hand > 0
-            package.add line_item, backordered, :backordered, line_item.variant if backordered > 0
+            on_hand, backordered = stock_location.fill_status(variant, units.count)
+            package.add_multiple units.slice!(0, on_hand), :on_hand if on_hand > 0
+            package.add_multiple units.slice!(0, backordered), :backordered if backordered > 0
           else
-            package.add line_item, line_item.quantity, :on_hand, line_item.variant
+            package.add_multiple units
           end
         end
-        package
+        package        
+
+
+        # package = Package.new(stock_location, order)
+        # order.line_items.each do |line_item|
+        #   product = line_item.product
+        #   if product.assembly?
+        #     line_item.parts.each do |part|
+        #       if part.should_track_inventory?
+        #         next unless stock_location.stock_item(part)
+
+        #         on_hand, backordered = stock_location.fill_status(part, line_item.quantity * product.count_of(part))
+        #         package.add line_item, on_hand, :on_hand, part if on_hand > 0
+        #         package.add line_item, backordered, :backordered, part if backordered > 0
+        #       else
+        #         package.add line_item, line_item.quantity * product.count_of(part), :on_hand, part
+        #       end
+        #     end
+        #   elsif line_item.should_track_inventory?
+        #     next unless stock_location.stock_item(line_item.variant)
+
+        #     on_hand, backordered = stock_location.fill_status(line_item.variant, line_item.quantity)
+        #     package.add line_item, on_hand, :on_hand, line_item.variant if on_hand > 0
+        #     package.add line_item, backordered, :backordered, line_item.variant if backordered > 0
+        #   else
+        #     package.add line_item, line_item.quantity, :on_hand, line_item.variant
+        #   end
+        # end
+        # package
       end
     end
   end

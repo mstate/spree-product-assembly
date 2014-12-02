@@ -37,16 +37,27 @@ module Spree
 
       private
         def adjust_packages
-          order.line_items.each do |line_item|
+          inventory_units = order.inventory_units
+          inventory_units.each do |inventory_unit|
+            adjuster = Adjuster.new(inventory_unit, :on_hand)
 
-            if line_item.product.assembly?
-              line_item.parts.each do |part|
-                update_packages_quantity(part, line_item, part_quantity_required(line_item, part))
-              end
-            else
-              update_packages_quantity(line_item.variant, line_item, line_item.quantity)
-            end
+            visit_packages(adjuster)
+
+            adjuster.status = :backordered
+            visit_packages(adjuster)
           end
+
+
+          # order.line_items.each do |line_item|
+
+          #   if line_item.product.assembly?
+          #     line_item.parts.each do |part|
+          #       update_packages_quantity(part, line_item, part_quantity_required(line_item, part))
+          #     end
+          #   else
+          #     update_packages_quantity(line_item.variant, line_item, line_item.quantity)
+          #   end
+          # end
         end
 
         def part_quantity_required(line_item, part)
@@ -61,12 +72,19 @@ module Spree
           visit_packages(package_adjuster, line_item)
         end
 
-        def visit_packages(package_adjuster, line_item)
+        def visit_packages(adjuster)
           packages.each do |package|
-            item = package.find_item package_adjuster.variant, package_adjuster.status, line_item
-            package_adjuster.adjust(item) if item
+            item = package.find_item adjuster.inventory_unit, adjuster.status
+            adjuster.adjust(package) if item
           end
         end
+      
+        # def visit_packages(package_adjuster, line_item)
+        #   packages.each do |package|
+        #     item = package.find_item package_adjuster.variant, package_adjuster.status, line_item
+        #     package_adjuster.adjust(item) if item
+        #   end
+        # end
 
         def prune_packages
           packages.reject! { |pkg| pkg.empty? }
